@@ -42,15 +42,14 @@
 
 // Uncomment SoftwareSerial for Arduino Uno or Nano.  
 
-//#include <SoftwareSerial.h>
-
-//#define ARDUINO_RX 5  //should connect to TX of the Serial MP3 Player module
-//#define ARDUINO_TX 6  //connect to RX of the module
-
-//SoftwareSerial mp3(ARDUINO_RX, ARDUINO_TX);
-
+#include <SoftwareSerial.h>
+//should connect to TX of the Serial MP3 Player module
+#define ARDUINO_RX 5
+//connect to RX of the module
+#define ARDUINO_TX 6
 
 
+SoftwareSerial myMP3(ARDUINO_RX, ARDUINO_TX);
 
 static int8_t Send_buf[8] = {0}; // Buffer for Send commands.  
 static uint8_t ansbuf[10] = {0}; // Buffer for the answers.    
@@ -70,7 +69,7 @@ String sbyte2hex(uint8_t b);
 String sanswer(void);
 
 /********************************************************************************/
-/*Function sendMP3Command: seek for a 'c' command and send it to MP3 	*/
+/*Function sendMP3Command: seek for a 'c' command and send it to MP3   */
 /*Parameter: c. Code for the MP3 Command, 'h' for help.                                                                                                         */
 /*Return:  void                                                                */
 
@@ -90,7 +89,7 @@ void sendMP3Command(char c){
       case 'p':
           if(!playing){
             Serial.println("Play ");
-       	    //sendCommand(CMD_PLAY_W_VOL, 0X0F01);//play the first song with volume 15 class
+            //sendCommand(CMD_PLAY_W_VOL, 0X0F01);//play the first song with volume 15 class
             sendCommand(CMD_PLAY, 0);
             playing = true;
           }else{
@@ -130,7 +129,7 @@ void sendMP3Command(char c){
 
  
 /********************************************************************************/
-/*Function decodeMP3Answer: Decode MP3 answer. 	                                */
+/*Function decodeMP3Answer: Decode MP3 answer.                                  */
 /*Parameter:-void                                                               */
 /*Return: The                                                  */
 
@@ -170,7 +169,7 @@ String decodeMP3Answer(){
 
 
 /********************************************************************************/
-/*Function: Send command to the MP3	                                        */
+/*Function: Send command to the MP3                                         */
 /*Parameter:-int8_t command                                                     */
 /*Parameter:-int16_ dat  parameter for the command                              */
 
@@ -187,7 +186,7 @@ void sendCommand(int8_t command, int16_t dat)
   Send_buf[7] = 0xef;   //
   for(uint8_t i=0; i<8; i++)
   {
-    mp3.write(Send_buf[i]) ;
+    myMP3.write(Send_buf[i]) ;
   }
   
 }
@@ -195,7 +194,7 @@ void sendCommand(int8_t command, int16_t dat)
 
 
 /********************************************************************************/
-/*Function: sbyte2hex. Returns a byte data in HEX format.	                */
+/*Function: sbyte2hex. Returns a byte data in HEX format.                 */
 /*Parameter:- uint8_t b. Byte to convert to HEX.                                */
 /*Return: String                                                                */
 
@@ -220,7 +219,7 @@ String sbyte2hex(uint8_t b)
 
 
 /********************************************************************************/
-/*Function: sanswer. Returns a String answer from mp3 UART module.	        */
+/*Function: sanswer. Returns a String answer from mp3 UART module.          */
 /*Parameter:- uint8_t b. void.                                                  */
 /*Return: String.  the answer (partial or full).                                */
 
@@ -244,7 +243,7 @@ String sbyte2hex(uint8_t b)
   uint8_t b;
   
   // start to read from mp3 serial.
-  b = mp3.read();
+  b = myMP3.read();
   
   // if there are "0x7E" it's a beginning.
   if(b == 0x7E)
@@ -265,10 +264,10 @@ String sbyte2hex(uint8_t b)
       // we are in the middle of a message so let's continue.
       //  or at the beginning, anyway go for the reads.
      
-      while (mp3.available() && ansbuf[iansbuf] != 0XEF)
+      while (myMP3.available() && ansbuf[iansbuf] != 0XEF)
       {
         iansbuf++; //  increase this index.
-        ansbuf[iansbuf] = mp3.read();
+        ansbuf[iansbuf] = myMP3.read();
         mp3answer+=sbyte2hex(ansbuf[iansbuf]);
         
       }
