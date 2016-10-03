@@ -4,38 +4,40 @@
 // Board:  Arduino
 // http://www.dx.com/p/uart-control-serial-mp3-music-player-module-for-arduino-avr-arm-pic-blue-silver-342439#.VfHyobPh5z0 
 //
-#define CMD_NEXT_SONG     0X01  // Play next song.
-#define CMD_PREV_SONG     0X02  // Play previous song.
-#define CMD_PLAY_W_INDEX  0X03
-#define CMD_VOLUME_UP     0X04
-#define CMD_VOLUME_DOWN   0X05
-#define CMD_SET_VOLUME    0X06
+#define CMD_PLAY          0X01
+#define CMD_PAUSE         0X02
+#define CMD_NEXT_SONG     0X03  // Play next song.
+#define CMD_PREV_SONG     0X04  // Play previous song.
+#define CMD_PLAY_W_INDEX  0X03 //?
+#define CMD_VOLUME_UP     0X05
+#define CMD_VOLUME_DOWN   0X06
+#define CMD_SET_VOLUME    0X06 //?
 
 #define CMD_SNG_CYCL_PLAY 0X08  // Single Cycle Play.
-#define CMD_SEL_DEV       0X09
-#define CMD_SLEEP_MODE    0X0A
-#define CMD_WAKE_UP       0X0B
-#define CMD_RESET         0X0C
-#define CMD_PLAY          0X0D
-#define CMD_PAUSE         0X0E
-#define CMD_PLAY_FOLDER_FILE 0X0F
+#define CMD_SEL_DEV       0X35 // Select Device
+#define CMD_SLEEP_MODE    0X0A //?
+#define CMD_WAKE_UP       0X0B //?
+#define CMD_RESET         0X0C //?
 
-#define CMD_STOP_PLAY     0X16
-#define CMD_FOLDER_CYCLE  0X17
-#define CMD_SHUFFLE_PLAY  0x18 //
-#define CMD_SET_SNGL_CYCL 0X19 // Set single cycle.
+#define CMD_PLAY_FOLDER_FILE 0X0F //?
 
-#define CMD_SET_DAC 0X1A
-  #define DAC_ON  0X00
-  #define DAC_OFF 0X01
+#define CMD_STOP_PLAY     0X0E // Stop Play
+#define CMD_FOLDER_CYCLE  0X17 //?
+#define CMD_SHUFFLE_PLAY  0x18 //?
+#define CMD_SET_SNGL_CYCL 0X19 // ? Set single cycle.
+
+#define CMD_SET_DAC 0X1A //?
+  #define DAC_ON  0X00 //?
+  #define DAC_OFF 0X01 //?
   
-#define CMD_PLAY_W_VOL    0X22
-#define CMD_PLAYING_N     0x4C
+#define CMD_PLAY_W_VOL    0X22 //?
+#define CMD_PLAYING_N     0x4C //?
 
 /************ Opitons **************************/  
-#define DEV_TF            0X02  
-#define SINGLE_CYCLE_ON   0X00
-#define SINGLE_CYCLE_OFF  0X01
+#define DEV_TF            0X01 // Device TF card
+
+#define SINGLE_CYCLE_ON   0X00 //?
+#define SINGLE_CYCLE_OFF  0X01 //?
 
 
 /*********************************************************************/
@@ -89,7 +91,6 @@ void sendMP3Command(char c){
       case 'p':
           if(!playing){
             Serial.println("Play ");
-            //sendCommand(CMD_PLAY_W_VOL, 0X0F01);//play the first song with volume 15 class
             sendCommand(CMD_PLAY, 0);
             playing = true;
           }else{
@@ -143,7 +144,7 @@ String decodeMP3Answer(){
     {   
      switch (ansbuf[3])
      {
-      case 0x3A:
+      case 0x3F:
          decodedMP3Answer+=" -> Memory card inserted.";
          break; 
          
@@ -155,7 +156,7 @@ String decodeMP3Answer(){
          decodedMP3Answer+=" -> Playing: "+String(ansbuf[6],DEC);
          break;
       
-      case 0x41:
+      case 0x00:
          decodedMP3Answer+=" -> Data recived correctly. ";
          break;     
      } 
@@ -176,18 +177,32 @@ String decodeMP3Answer(){
 void sendCommand(int8_t command, int16_t dat)
 {
   delay(20);
+/*ori:  
   Send_buf[0] = 0x7e;   //
   Send_buf[1] = 0xff;   //
-  Send_buf[2] = 0x06;   // Len 
+  Send_buf[2] = 0x02;   // Len 
   Send_buf[3] = command;//
   Send_buf[4] = 0x01;   // 0x00 NO, 0x01 feedback
   Send_buf[5] = (int8_t)(dat >> 8);  //datah
   Send_buf[6] = (int8_t)(dat);       //datal
   Send_buf[7] = 0xef;   //
-  for(uint8_t i=0; i<8; i++)
+*/
+
+  Send_buf[0] = 0x7e;   // Start
+  Send_buf[1] = 0x04;   // Len
+  Send_buf[2] = command;   // command
+  Send_buf[5] = dat;  //data
+//  Send_buf[6] = (int8_t)(dat);       //datal
+  Send_buf[5] = 0xef;  // End
+  
+  Serial.print("Send: ");
+  
+  for(uint8_t i=0; i<6; i++)
   {
+    Serial.print(sbyte2hex(Send_buf[i]));
     myMP3.write(Send_buf[i]) ;
   }
+  Serial.println(" ");
   
 }
 
@@ -204,7 +219,7 @@ String sbyte2hex(uint8_t b)
   String shex;
   
   //Serial.print("0x");
-  shex="0X";
+  shex="0x";
   
   //if (b < 16) Serial.print("0");
   if (b < 16) shex+="0";
