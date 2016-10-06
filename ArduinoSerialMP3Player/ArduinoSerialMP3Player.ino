@@ -6,6 +6,7 @@
 // Serial MP3 Player Catalex (YX5300 chip)
 #define Serial3    // Connect the MP3 Serial Player to the Arduino MEGA Serial3 (14 TX3 -> RX, 15 RX3 -> TX)
 #define SWITCH 8
+#define debug true
 
 
 #include "mp3serial.h"  // Default Arduino MEGA Serial3. Change this file for Arduino UNO suport.
@@ -18,11 +19,22 @@ void setup()
   myMP3.begin(9600);
   //myfeature.begin(9600);
   delay(500);
-    sendCommand(CMD_SEL_DEV, DEV_TF);  
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+    sendCommand(CMD_SEL_DEV, DEV_TF);  //Select Device
+=======
+    sendCommand(CMD_SEL_DEV, DEV_TF, 0);  //Select Device
+>>>>>>> 2ea14e5... Add Folderplay, bugfix, open-smart specific
+=======
+    sendCommand(CMD_SEL_DEV, DEV_TF, 0);  //Select Device
+>>>>>>> 2ea14e5... Add Folderplay, bugfix, open-smart specific
+=======
+    sendCommand(CMD_SEL_DEV, DEV_TF);  //Select Device
+>>>>>>> 68d5497... cosmetic
   delay(200);
-
+    sendCommand(CMD_SET_VOLUME, 0x0f); //Set Standard volume to 15
 }
-
 
 void loop() 
 {
@@ -49,9 +61,25 @@ void loop()
   delay(200);
 }
 
+void debug_print(char msg){
+  if (debug)
+  {
+    Serial.println(msg);
+  }
+}
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> 2ea14e5... Add Folderplay, bugfix, open-smart specific
+
   
  
  
 
 
 
+>>>>>>> 2ea14e5... Add Folderplay, bugfix, open-smart specific
+=======
+>>>>>>> 68d5497... cosmetic

@@ -11,15 +11,15 @@
 #define CMD_PLAY_W_INDEX  0X03 //?
 #define CMD_VOLUME_UP     0X05
 #define CMD_VOLUME_DOWN   0X06
-#define CMD_SET_VOLUME    0X06 //?
+#define CMD_SET_VOLUME    0X31 // Set Volume
 
-#define CMD_SNG_CYCL_PLAY 0X08  // Single Cycle Play.
+#define CMD_SNG_CYCL_PLAY 0X33  // All Songs Cycle Play.
 #define CMD_SEL_DEV       0X35 // Select Device
 #define CMD_SLEEP_MODE    0X0A //?
 #define CMD_WAKE_UP       0X0B //?
 #define CMD_RESET         0X0C //?
 
-#define CMD_PLAY_FOLDER_FILE 0X0F //?
+#define CMD_PLAY_FOLDER_FILE 0X42 //Play with folder and file name
 
 #define CMD_STOP_PLAY     0X0E // Stop Play
 #define CMD_FOLDER_CYCLE  0X17 //?
@@ -56,17 +56,15 @@ SoftwareSerial myMP3(ARDUINO_RX, ARDUINO_TX);
 static int8_t Send_buf[8] = {0}; // Buffer for Send commands.  
 static uint8_t ansbuf[10] = {0}; // Buffer for the answers.    
 int iansbuf = 0;                 // Index for answer buffer.
-String mp3answer;                // Answer from the MP3.   
+String mp3answer;                // Answer from the MP3.  
+int foldernr = 0;                      // Current Folder 
  
 static int8_t pre_vol, volume = 0x0f; // Volume. 0-30 DEC values. 0x0f = 15. 
 
-
 boolean playing = false;    // Sending 'p' the module switch to Play to Pause or viceversa.   
 
-
-
 String decodeMP3Answer();
-void sendCommand(int8_t command, int16_t dat);
+void sendCommand(int8_t command, int8_t dath=0, int8_t datl=0); //optional Arg
 String sbyte2hex(uint8_t b);
 String sanswer(void);
 
@@ -76,54 +74,64 @@ String sanswer(void);
 /*Return:  void                                                                */
 
 void sendMP3Command(char c){
-    switch (c) {
-    case '?':
-    case 'h':
+    if (isDigit(c)){
+        Serial.println("Play mp3 in Folder "+String(c));
+        if(foldernr==int(c)-48){
+          //Play next Song
+          Serial.println("Next");
+          sendCommand(CMD_NEXT_SONG);
+        }else{
+          //Play first Song in Foldernr
+          foldernr=int(c)-48; //ASCI to int
+          sendCommand(CMD_PLAY_FOLDER_FILE, foldernr, 0x01); 
+        }
+    }else{
+      switch (c) {
+      case '?':
+      case 'h':
           Serial.println("HELP  ");
           Serial.println(" p > Play / Pause ");
           Serial.println(" n > Next");          
           Serial.println(" b > Previous");
           Serial.println(" u > Volume UP");
           Serial.println(" d > Volume DOWN");
+          Serial.println(" 1-9 > Play mp3 in Folder 1 or up to 9");
       break;
-                 
      
       case 'p':
           if(!playing){
             Serial.println("Play ");
-            sendCommand(CMD_PLAY, 0);
+            sendCommand(CMD_PLAY);
             playing = true;
           }else{
             Serial.println("Pause");
-            sendCommand(CMD_PAUSE, 0);
+            sendCommand(CMD_PAUSE);
              playing = false;           
           }
       break;
 
-      
       case 'n':
           Serial.println("Next");
-          sendCommand(CMD_NEXT_SONG, 0);
-          sendCommand(CMD_PLAYING_N, 0x0000); // ask for the number of file is playing
+          sendCommand(CMD_NEXT_SONG);
+//          sendCommand(CMD_PLAYING_N, 0x0000); // ask for the number of file is playing
       break;
-      
       
       case 'b':
           Serial.println("Previous");
-          sendCommand(CMD_PREV_SONG, 0);
-          sendCommand(CMD_PLAYING_N, 0x0000); // ask for the number of file is playing
+          sendCommand(CMD_PREV_SONG);
+//          sendCommand(CMD_PLAYING_N, 0x0000); // ask for the number of file is playing
       break;
      
       case 'u':
           Serial.println("Volume Up");
-          sendCommand(CMD_VOLUME_UP, 0);
+          sendCommand(CMD_VOLUME_UP);
       break;
 
       case 'd':
           Serial.println("Volume Down");
-          sendCommand(CMD_VOLUME_DOWN, 0);
+          sendCommand(CMD_VOLUME_DOWN);
       break;
-      
+     }
     }
 }
 
@@ -158,6 +166,8 @@ String decodeMP3Answer(){
       
       case 0x00:
          decodedMP3Answer+=" -> Data recived correctly. ";
+         // next Song
+          sendCommand(CMD_NEXT_SONG);
          break;     
      } 
     }  
@@ -172,9 +182,9 @@ String decodeMP3Answer(){
 /********************************************************************************/
 /*Function: Send command to the MP3                                         */
 /*Parameter:-int8_t command                                                     */
-/*Parameter:-int16_ dat  parameter for the command                              */
+/*Parameter:-int16_ dat dath and datl as parameters for the command                              */
 
-void sendCommand(int8_t command, int16_t dat)
+void sendCommand(int8_t command, int8_t dath, int8_t datl)
 {
   delay(20);
 /*ori:  
@@ -191,8 +201,8 @@ void sendCommand(int8_t command, int16_t dat)
   Send_buf[0] = 0x7e;   // Start
   Send_buf[1] = 0x04;   // Len
   Send_buf[2] = command;   // command
-  Send_buf[5] = dat;  //data
-//  Send_buf[6] = (int8_t)(dat);       //datal
+  Send_buf[3] = dath; //datah
+  Send_buf[4] = datl;//datal
   Send_buf[5] = 0xef;  // End
   
   Serial.print("Send: ");
