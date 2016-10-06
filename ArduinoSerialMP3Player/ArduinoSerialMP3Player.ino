@@ -19,19 +19,7 @@ void setup()
   myMP3.begin(9600);
   //myfeature.begin(9600);
   delay(500);
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
     sendCommand(CMD_SEL_DEV, DEV_TF);  //Select Device
-=======
-    sendCommand(CMD_SEL_DEV, DEV_TF, 0);  //Select Device
->>>>>>> 2ea14e5... Add Folderplay, bugfix, open-smart specific
-=======
-    sendCommand(CMD_SEL_DEV, DEV_TF, 0);  //Select Device
->>>>>>> 2ea14e5... Add Folderplay, bugfix, open-smart specific
-=======
-    sendCommand(CMD_SEL_DEV, DEV_TF);  //Select Device
->>>>>>> 68d5497... cosmetic
   delay(200);
     sendCommand(CMD_SET_VOLUME, 0x0f); //Set Standard volume to 15
 }
@@ -67,19 +55,3 @@ void debug_print(char msg){
     Serial.println(msg);
   }
 }
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 2ea14e5... Add Folderplay, bugfix, open-smart specific
-
-  
- 
- 
-
-
-
->>>>>>> 2ea14e5... Add Folderplay, bugfix, open-smart specific
-=======
->>>>>>> 68d5497... cosmetic
